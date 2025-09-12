@@ -46,22 +46,77 @@ class TimidAgent(Agent):
            and the agents are <= dist units away from one another
 
         If the pacman is not in danger, we return Directions.STOP
-        If the pacman is in danger we return the direction to the ghost.
-        """
+        If the pacman is in danger we return the direction to the ghost.    """
 
-        # Your code
-        raise NotImplemented
-    
+        pacman = pacman.getPosition()  # The pacman position (x,y)
+        ghostPos = ghost.getPosition()  # The ghost position (x,y)
+        ghostScared = ghost.scaredTimer > 0  
+        # Check if the ghost is scared
+        if ghostScared:
+            return Directions.STOP
+        
+
+        # Check if in the same row or column and within distance
+        if pacman[0] == ghostPos[0]:  # Same column
+            if abs(pacman[1] - ghostPos[1]) <= dist:
+                return Directions.NORTH if pacman[1] < ghostPos[1] else Directions.SOUTH
+        elif pacman[1] == ghostPos[1]:  # Same row
+            if abs(pacman[0] - ghostPos[0]) <= dist:
+                return Directions.EAST if pacman[0] < ghostPos[0] else Directions.WEST
+
+        return Directions.STOP
+
     def getAction(self, state):
         """
-        state - GameState
-        
-        Fill in appropriate documentation
+        getAction acts like the LeftTurn Agent but before following that logic checks sequentially if the pacman is in danger
+        if pacman is in danger the function will reverse the position of pacman according to legal moves
         """
+        # Global vars
         legal = state.getLegalPacmanActions()
-        ghostPositions = state.getGhostPositions()
-        pacmanPosition = state.getPacmanPosition()
+        pacmanState = state.getPacmanState()
+        ghostStates = state.getGhostStates()
+        heading = pacmanState.getDirection()
+
+        # Check if in danger from any ghost
+        for ghost in ghostStates:
+            inDanger = self.inDanger(pacmanState, ghost)
+            if inDanger != Directions.STOP:
+
+                # Pacman is in danger, decide new direction
+                dangerDir = inDanger
+                reverseDir = Directions.REVERSE[dangerDir]
+                leftDir = Directions.LEFT[dangerDir]
+                rightDir = Directions.RIGHT[dangerDir]
+
+                if reverseDir in legal:
+                    return reverseDir
+                elif leftDir in legal:
+                    return leftDir
+                elif rightDir in legal:
+                    return rightDir
+                elif dangerDir in legal:
+                    return dangerDir
+                else:
+                    return Directions.STOP
+
+        # if pacman is not in danger, follow LeftTurnAgent strategy
+
+        if heading == Directions.STOP:
+            heading = Directions.NORTH
         
+        left = Directions.LEFT[heading]
+        if left in legal:
+            action = left
+        else:
+            if heading in legal:
+                action = heading
+            elif Directions.RIGHT[heading] in legal:
+                action = Directions.RIGHT[heading]
+            elif Directions.REVERSE[heading] in legal:
+                action = Directions.REVERSE[heading]
+            else:
+                action = Directions.STOP
+        return action
         
 
-        raise NotImplemented
+
