@@ -9,4 +9,4 @@ Each time the game  invokes nextAction, nextAction will make a call for each gho
 
 1. The ghost and the pacman are in the same row or column. 
 2. The ghost is within dist units (formal argument to the method) of the pacman.
-3. 3. The ghost is not frightened (see the Ghost state for how to check for this).  
+3. The ghost is not frightened (see the Ghost state for how to check for this).  
